@@ -1,0 +1,26 @@
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+export ledger total_tickets: Uint<64>;
+export ledger winning_ticket: Uint<64>;
+export ledger round: Uint<64>;
+
+// Private state: User's tickets
+export circuit buy_ticket(): Uint<64> {
+  const next_ticket = (total_tickets + 1) as Uint<64>;
+  total_tickets = next_ticket;
+  return next_ticket;
+}
+
+export circuit draw_winner(winning_ticket_arg: Uint<64>): [] {
+  assert(total_tickets > 0, "No tickets sold");
+  assert(winning_ticket_arg <= total_tickets, "Winning ticket out of bounds");
+  // Winner selection logic is off-chain for MVP
+  winning_ticket = disclose(winning_ticket_arg);
+  round = (round + 1) as Uint<64>;
+}
+
+export circuit claim_prize(ticket_id: Uint<64>): [] {
+  assert(ticket_id == winning_ticket, "User does not hold the winning ticket");
+}
