@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as midnightService from '../services/midnight';
+import type { WalletContext } from '../services/walletService';
 
 export interface UseLotteryContractResult {
     contract: any | null;
@@ -15,7 +16,7 @@ export interface UseLotteryContractResult {
     refreshState: () => Promise<void>;
 }
 
-export function useLotteryContract(walletAddress: string | null): UseLotteryContractResult {
+export function useLotteryContract(walletContext: WalletContext | null): UseLotteryContractResult {
     const [contract, setContract] = useState<any | null>(null);
     const [contractAddress, setContractAddress] = useState<string | null>(null);
     const [lotteryState, setLotteryState] = useState<midnightService.LotteryState | null>(null);
@@ -25,11 +26,10 @@ export function useLotteryContract(walletAddress: string | null): UseLotteryCont
 
     // Initialize providers when wallet connects
     useEffect(() => {
-        if (walletAddress && window.midnight) {
+        if (walletContext) {
             const initProviders = async () => {
                 try {
-                    const walletProvider = window.midnight!.getProvider();
-                    const p = await midnightService.initializeProviders(walletProvider);
+                    const p = await midnightService.initializeProviders(walletContext);
                     setProviders(p);
                 } catch (err) {
                     console.error('Failed to initialize providers:', err);
@@ -38,7 +38,7 @@ export function useLotteryContract(walletAddress: string | null): UseLotteryCont
             };
             initProviders();
         }
-    }, [walletAddress]);
+    }, [walletContext]);
 
     // Refresh lottery state periodically
     useEffect(() => {
@@ -95,7 +95,7 @@ export function useLotteryContract(walletAddress: string | null): UseLotteryCont
     };
 
     const buyTicket = async () => {
-        if (!contract || !walletAddress) {
+        if (!contract || !providers) {
             setError('Contract not loaded or wallet not connected');
             return;
         }
@@ -104,8 +104,8 @@ export function useLotteryContract(walletAddress: string | null): UseLotteryCont
         setError(null);
 
         try {
-            const ticketId = await midnightService.buyTicket(contract);
-            midnightService.saveTicketToStorage(walletAddress, ticketId);
+            const ticketId = await midnightService.buyTicket(providers, contract);
+            midnightService.saveTicketToStorage(ticketId);
             await refreshState();
         } catch (err) {
             console.error('Buy ticket failed:', err);
@@ -135,9 +135,9 @@ export function useLotteryContract(walletAddress: string | null): UseLotteryCont
         }
     };
 
-    const claimPrize = async (ticketId: bigint) => {
-        if (!contract) {
-            setError('Contract not loaded');
+    const claimPrize = async () => {
+        if (!contract || !providers) {
+            setError('Contract not loaded or wallet not connected');
             return;
         }
 
@@ -145,7 +145,7 @@ export function useLotteryContract(walletAddress: string | null): UseLotteryCont
         setError(null);
 
         try {
-            await midnightService.claimPrize(contract, ticketId);
+            await midnightService.claimPrize(providers, contract);
             await refreshState();
         } catch (err) {
             console.error('Claim prize failed:', err);

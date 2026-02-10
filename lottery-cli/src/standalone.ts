@@ -60,7 +60,7 @@ try {
     while (Date.now() - start < timeout) {
       try {
         const res = await fetch(url);
-        if (res.ok) {
+        if (res.ok || res.status === 405) { // 405 is fine for GraphQL GET check
           logger.info(`${name} is healthy!`);
           return;
         }
@@ -72,9 +72,36 @@ try {
     throw new Error(`${name} failed to become healthy within ${timeout}ms`);
   };
 
+  // Wait for Docker container health (indexer uses file-based healthcheck)
+  const waitForContainerHealth = async (containerName: string, timeout = 600000) => {
+    logger.info(`Waiting for ${containerName} container to be healthy...`);
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+      try {
+        const result = await new Promise<string>((resolve, reject) => {
+          const proc = spawn('docker', ['inspect', '--format', '{{.State.Health.Status}}', containerName], { shell: true });
+          let output = '';
+          proc.stdout?.on('data', (data) => output += data.toString());
+          proc.on('close', (code) => code === 0 ? resolve(output.trim()) : reject());
+          proc.on('error', reject);
+        });
+        if (result === 'healthy') {
+          logger.info(`${containerName} is healthy!`);
+          return;
+        }
+      } catch {
+        // ignore error
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+    throw new Error(`${containerName} failed to become healthy within ${timeout}ms`);
+  };
+
   await Promise.all([
     waitForService('Proof Server', 'http://localhost:6300/version'),
     waitForService('Node', 'http://localhost:9944/health'),
+    waitForService('Indexer API', 'http://localhost:8088/api/v3/graphql'),
+    waitForContainerHealth('lottery-indexer'),
   ]);
 
   await run(config, logger, cleanup);

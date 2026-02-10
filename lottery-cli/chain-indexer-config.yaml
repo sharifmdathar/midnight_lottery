@@ -1,0 +1,50 @@
+default:
+  run_migrations: true
+
+  application:
+    network_id: "undeployed"
+    blocks_buffer: 10
+    save_ledger_state_after: 1000
+    caught_up_max_distance: 10
+    caught_up_leeway: 5
+
+  infra:
+    storage:
+      host: "postgres"
+      port: 5432
+      dbname: "indexer"
+      user: "indexer"
+      password: "indexer"
+      sslmode: "prefer"
+      max_connections: 10
+      idle_timeout: "1m"
+      max_lifetime: "5m"
+
+    pub_sub:
+      url: "nats://nats:4222"
+      username: "indexer"
+      password: "indexer"
+      max_reconnects: 4
+
+    ledger_state_storage:
+      url: "nats://nats:4222"
+      username: "indexer"
+      password: "indexer"
+      max_reconnects: 4
+      num_replicas: 1
+
+    node:
+      url: "ws://node:9944"
+      reconnect_max_delay: "10s"
+      reconnect_max_attempts: 30
+      subscription_recovery_timeout: "30s"
+
+  telemetry:
+    tracing:
+      enabled: false
+      service_name: "chain-indexer"
+      otlp_exporter_endpoint: "http://localhost:4317"
+    metrics:
+      enabled: false
+      address: "0.0.0.0"
+      port: 9000

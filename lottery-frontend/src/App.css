@@ -183,6 +183,31 @@ body {
   box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
 }
 
+.success-banner {
+  background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(81, 207, 102, 0.3);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 .contract-setup {
   max-width: 600px;
   margin: 2rem auto;

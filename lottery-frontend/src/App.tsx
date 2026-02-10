@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { WalletConnect } from './components/WalletConnect';
+import WalletConnect from './components/WalletConnect';
 import { useLotteryContract } from './hooks/useLotteryContract';
 import { loadTicketsFromStorage } from './services/midnight';
+import { config } from './config';
+import type { WalletContext } from './services/walletService';
 import './App.css';
 
 function App() {
+  const [walletContext, setWalletContext] = useState<WalletContext | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [myTickets, setMyTickets] = useState<bigint[]>([]);
   const [contractAddressInput, setContractAddressInput] = useState('');
@@ -21,12 +24,22 @@ function App() {
     buyTicket,
     drawWinner,
     claimPrize,
-  } = useLotteryContract(walletAddress);
+  } = useLotteryContract(walletContext);
+
+  const DEPLOYED_CONTRACT_ADDRESS = '2fcb53e4acc26a74a7a246ec728710460bdf37ad8a2119abe732232a485bcd40';
+
+  // Auto-join deployed contract when wallet connects
+  useEffect(() => {
+    if (walletAddress && !contract && !isLoading) {
+      console.log('App: Auto-joining deployed contract...', DEPLOYED_CONTRACT_ADDRESS);
+      joinContract(DEPLOYED_CONTRACT_ADDRESS).catch(console.error);
+    }
+  }, [walletAddress, contract, isLoading, joinContract]);
 
   // Load user's tickets from localStorage when wallet connects
   useEffect(() => {
     if (walletAddress) {
-      const tickets = loadTicketsFromStorage(walletAddress);
+      const tickets = loadTicketsFromStorage();
       setMyTickets(tickets);
     }
   }, [walletAddress, lotteryState]); // Refresh when state changes
@@ -34,7 +47,7 @@ function App() {
   const handleBuyTicket = async () => {
     await buyTicket();
     if (walletAddress) {
-      const tickets = loadTicketsFromStorage(walletAddress);
+      const tickets = loadTicketsFromStorage();
       setMyTickets(tickets);
     }
   };
@@ -57,7 +70,10 @@ function App() {
       </header>
 
       <main className="app-main">
-        <WalletConnect onAddressChange={setWalletAddress} />
+        <WalletConnect
+          onWalletConnect={setWalletContext}
+          onAddressChange={setWalletAddress}
+        />
 
         {error && (
           <div className="error-banner">

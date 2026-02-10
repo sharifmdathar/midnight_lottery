@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@midnight-ntwrk/dapp-connector-api": "^3.0.0",
     "@midnight-ntwrk/midnight-js-contracts": "^3.0.0",
     "@midnight-ntwrk/midnight-js-network-id": "^3.0.0",
     "@midnight-ntwrk/midnight-js-types": "^3.0.0",
     "@midnight-ntwrk/wallet-sdk-facade": "^1.0.0",
+    "buffer": "^6.0.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
@@ -29,6 +31,8 @@
     "globals": "^16.5.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.5.0"
   }
 }
