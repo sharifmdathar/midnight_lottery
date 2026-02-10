@@ -149,8 +149,16 @@ export async function getShieldedAddress(ctx: WalletContext): Promise<string> {
         const state = await Rx.firstValueFrom(ctx.wallet.state());
         return state.shielded.coinPublicKey.toHexString();
     } else {
-        const state = await ctx.api.state();
-        return state.coinPublicKey;
+        // Adapt to different Lace API versions
+        if (typeof ctx.api.state === 'function') {
+            const state = await ctx.api.state();
+            return state.coinPublicKey;
+        } else if (typeof (ctx.api as any).getShieldedAddresses === 'function') {
+            const addresses = await (ctx.api as any).getShieldedAddresses();
+            return addresses.shieldedCoinPublicKey;
+        } else {
+            throw new Error('Unknown Lace API structure: cannot find state() or getShieldedAddresses()');
+        }
     }
 }
 

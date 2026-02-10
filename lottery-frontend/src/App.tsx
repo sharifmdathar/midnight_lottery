@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import WalletConnect from './components/WalletConnect';
 import { useLotteryContract } from './hooks/useLotteryContract';
 import { loadTicketsFromStorage } from './services/midnight';
-import { config } from './config';
+// import { config } from './config';
 import type { WalletContext } from './services/walletService';
 import './App.css';
 
@@ -26,15 +26,17 @@ function App() {
     claimPrize,
   } = useLotteryContract(walletContext);
 
-  const DEPLOYED_CONTRACT_ADDRESS = '2fcb53e4acc26a74a7a246ec728710460bdf37ad8a2119abe732232a485bcd40';
+
 
   // Auto-join deployed contract when wallet connects
+  /*
   useEffect(() => {
-    if (walletAddress && !contract && !isLoading) {
+    if (walletAddress && !contract && !isLoading && DEPLOYED_CONTRACT_ADDRESS) {
       console.log('App: Auto-joining deployed contract...', DEPLOYED_CONTRACT_ADDRESS);
       joinContract(DEPLOYED_CONTRACT_ADDRESS).catch(console.error);
     }
   }, [walletAddress, contract, isLoading, joinContract]);
+  */
 
   // Load user's tickets from localStorage when wallet connects
   useEffect(() => {

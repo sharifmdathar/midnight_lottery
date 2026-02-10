@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createWallet, getShieldedAddress, createLaceWalletContext } from '../services/walletService';
-import { connectLaceWallet, enableLaceWallet, isLaceInstalled } from '../services/dappConnectorService';
+import { connectLaceWallet, enableLaceWallet } from '../services/dappConnectorService';
 import type { WalletContext } from '../services/walletService';
 import './WalletConnect.css';
 

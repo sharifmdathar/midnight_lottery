@@ -1,3 +1,5 @@
+import { NetworkId, Transaction } from '@midnight-ntwrk/zswap';
+
 // Real Midnight SDK integration for browser
 import { type WalletContext } from './walletService';
 import { Lottery } from '@midnight-ntwrk/lottery-contract';
@@ -97,23 +99,69 @@ async function createWalletAndMidnightProvider(
 ): Promise<WalletProvider & MidnightProvider> {
     if (ctx.type === 'lace') {
         console.log('Using Lace wallet provider...');
-        const state = await ctx.api.state();
+
+        // Adapt to different Lace API versions
+        let coinPublicKey: string;
+        let encryptionPublicKey: string;
+
+        // Check for 'state()' method (newer/standard API)
+        if (typeof ctx.api.state === 'function') {
+            const state = await ctx.api.state();
+            coinPublicKey = state.coinPublicKey;
+            encryptionPublicKey = state.encryptionPublicKey;
+        }
+        // Check for 'getShieldedAddresses()' (found in yo/Lottery-Midnight reference)
+        else if (typeof (ctx.api as any).getShieldedAddresses === 'function') {
+            const addresses = await (ctx.api as any).getShieldedAddresses();
+            coinPublicKey = addresses.shieldedCoinPublicKey;
+            encryptionPublicKey = addresses.shieldedEncryptionPublicKey;
+        } else {
+            throw new Error('Unknown Lace API structure: cannot find state() or getShieldedAddresses()');
+        }
+
+        console.log('Lace CoinPublicKey type:', typeof coinPublicKey, coinPublicKey);
+        console.log('Lace EncryptionPublicKey type:', typeof encryptionPublicKey, encryptionPublicKey);
 
         return {
             getCoinPublicKey() {
-                return state.coinPublicKey;
+                return coinPublicKey;
             },
             getEncryptionPublicKey() {
-                return state.encryptionPublicKey;
+                return encryptionPublicKey;
             },
             async balanceTx(tx, _ttl?) {
-                // For Lace, we pass the transaction to the connector
-                // The connector handles balancing, proving, and signing
-                return await ctx.api.balanceAndProveTransaction(tx as any, []) as any;
+                console.log('balanceTx called with:', tx);
+
+                // Serialize request (Frontend Transaction -> Uint8Array)
+                // This bypasses "instanceof" checks across the extension boundary
+                // We use Undeployed network ID for local development
+                const networkId = NetworkId.Undeployed;
+                const serializedTx = tx.serialize(networkId);
+                console.log('Serialized TX for wallet:', serializedTx.length, 'bytes');
+
+                // Adapt to different balancing methods
+                let result;
+                if (typeof ctx.api.balanceAndProveTransaction === 'function') {
+                    result = await ctx.api.balanceAndProveTransaction(serializedTx as any, []);
+                } else if (typeof (ctx.api as any).balanceUnsealedTransaction === 'function') {
+                    result = await (ctx.api as any).balanceUnsealedTransaction(serializedTx as any);
+                } else {
+                    throw new Error('Unknown Lace API structure: cannot find balance method');
+                }
+
+                console.log('Wallet returned result:', result);
+
+                // If result is a Uint8Array (serialized), deserialize it.
+                if (result instanceof Uint8Array || (result && (result as any).length !== undefined && !((result as any) instanceof Transaction))) {
+                    return Transaction.deserialize(result as Uint8Array, networkId);
+                }
+
+                return result;
             },
             async submitTx(tx) {
-                const [txId] = await ctx.api.submitTransaction(tx as any);
-                return txId;
+                // Submit often returns [txId] or just txId depending on version
+                const result = await ctx.api.submitTransaction(tx as any);
+                return Array.isArray(result) ? result[0] : result;
             },
         };
     }

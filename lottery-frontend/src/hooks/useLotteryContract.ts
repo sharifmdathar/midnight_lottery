@@ -64,8 +64,14 @@ export function useLotteryContract(walletContext: WalletContext | null): UseLott
             setContract(newContract);
             setContractAddress(newContract.deployTxData.public.contractAddress);
             await refreshState();
-        } catch (err) {
+        } catch (err: any) {
             console.error('Deploy failed:', err);
+            if (err && err.cause) {
+                console.error('Deploy error cause:', err.cause);
+                if (err.cause.failure) {
+                    console.error('Deploy error failure details:', JSON.stringify(err.cause.failure, null, 2));
+                }
+            }
             setError(err instanceof Error ? err.message : 'Failed to deploy contract');
         } finally {
             setIsLoading(false);
