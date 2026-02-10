@@ -136,7 +136,7 @@ async function createWalletAndMidnightProvider(
                 // This bypasses "instanceof" checks across the extension boundary
                 // We use Undeployed network ID for local development
                 const networkId = NetworkId.Undeployed;
-                const serializedTx = tx.serialize(networkId);
+                const serializedTx = tx.serialize();
                 console.log('Serialized TX for wallet:', serializedTx.length, 'bytes');
 
                 // Adapt to different balancing methods
