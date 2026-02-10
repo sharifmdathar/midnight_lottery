@@ -62,6 +62,10 @@ export default defineConfig({
     commonjsOptions: {
       transformMixedEsModules: true, // Handle mixed CommonJS/ESM modules
     },
+    sourcemap: false,
+  },
+  esbuild: {
+    sourcemap: false,
   },
   server: {
     fs: {

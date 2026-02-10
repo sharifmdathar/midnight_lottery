@@ -13,10 +13,13 @@
     "preview": "tsx src/preview.ts",
     "preview-ps": "docker compose -f proof-server.yml pull && tsx src/preview-start-proof-server.ts",
     "preprod": "tsx src/preprod.ts",
-    "preprod-ps": "docker compose -f proof-server.yml pull && tsx src/preprod-start-proof-server.ts"
+    "preprod-ps": "docker compose -f proof-server.yml pull && tsx src/preprod-start-proof-server.ts",
+    "fund": "tsx src/fund.ts",
+    "fund-and-register-dust": "tsx src/fund-and-register-dust.ts"
   },
   "dependencies": {
-    "@midnight-ntwrk/lottery-contract": "*"
+    "@midnight-ntwrk/lottery-contract": "*",
+    "bip39": "^3.1.0"
   },
   "devDependencies": {
     "tsx": "^4.21.0"
