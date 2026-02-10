@@ -1,73 +1,64 @@
-# React + TypeScript + Vite
+# Midnight Lottery DApp
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A privacy-preserving lottery application built on the [Midnight Network](https://midnight.network/).
 
-Currently, two official plugins are available:
+## 🚀 Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This DApp allows users to:
+-   **Deploy** a new lottery smart contract.
+-   **Join** an existing lottery.
+-   **Buy Tickets** privately (using ZK proofs).
+-   **Draw a Winner** fairly and verifiably.
+-   **Claim Prizes** anonymously.
 
-## React Compiler
+## 🛠️ Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+-   **Node.js**: v18 or higher.
+-   **Lace Wallet**: [Download Endpoint](https://www.lace.io/) (configured for Midnight Testnet).
+-   **Midnight Compact Compiler**: For building contracts (if modifying `.compact` files).
 
-## Expanding the ESLint configuration
+## 📦 Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+2.  **Start Local Development Server**:
+    ```bash
+    npm run dev
+    ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+3.  **Open in Browser**:
+    Navigate to `http://localhost:5173`.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🔧 Troubleshooting
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 1. Wallet Connection Issues
+-   Ensure you have the **Lace Wallet** extension installed and set to **Midnight Testnet**.
+-   If the DApp doesn't detect the wallet, reload the page.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 2. Deployment Errors
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+#### `TypeError: The first argument must be one of type string...`
+-   **Cause**: A "dual package" issue where `Transaction` objects from different versions of the Midnight SDK conflict.
+-   **Fix**: This is resolved in `vite.config.ts` using aliases. If you see this, try restarting the dev server (`npm run dev`).
+
+#### `FiberFailure` or `No dust tokens found`
+-   **Cause**: Your wallet has **0 tDUST** (Testnet Dust). You need tokens to pay for transaction fees.
+-   **Fix**:
+    1.  Copy your Lace wallet address.
+    2.  Go to the [Midnight Testnet Faucet](https://faucet.testnet.midnight.network/).
+    3.  Request **tDUST** and **tBTC** (optional).
+    4.  Wait for the transaction to confirm, then try again.
+
+## 📂 Project Structure
+
+-   `src/contracts/`: Smart contract logic.
+-   `src/services/midnight.ts`: Core Midnight SDK integration (Wallet, Proofs, Indexer).
+-   `src/hooks/useLotteryContract.ts`: React hooks for managing contract state.
+-   `vite.config.ts`: Configuration for building the frontend (includes polyfills for Buffer/Stream).
+
+## 📜 License
+
+MIT
