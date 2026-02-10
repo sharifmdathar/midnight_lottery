@@ -42,13 +42,14 @@ const runCommand = (command: string, args: string[], cwd: string): Promise<void>
 const cleanup = async () => {
   logger.info('Stopping docker containers...');
   try {
-    await runCommand('docker', ['compose', '-f', 'standalone.yml', 'down'], path.dirname(dockerComposeFile));
+    await runCommand('docker', ['compose', '-f', 'standalone.yml', 'down', '-v'], path.dirname(dockerComposeFile));
   } catch (e) {
     logger.error(`Error stopping docker containers: ${e}`);
   }
 };
 
 try {
+  await cleanup();
   logger.info('Starting docker containers...');
   // Use --wait to wait for healthchecks to pass (node, indexer, proof-server)
   await runCommand('docker', ['compose', '-f', 'standalone.yml', 'up', '-d', '--pull', 'always'], path.dirname(dockerComposeFile));
